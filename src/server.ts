@@ -1,16 +1,17 @@
 import { APP_BASE_HREF } from '@angular/common';
-import { CommonEngine, isMainModule } from '@angular/ssr/node';
 import express from 'express';
-import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+// Remove SSR-related imports
+import { CommonEngine, isMainModule } from '@angular/ssr/node';
 import bootstrap from './main.server';
+import { dirname, join, resolve } from 'path';
+import { fileURLToPath } from 'url';
 
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
 const indexHtml = join(serverDistFolder, 'index.server.html');
 
 const app = express();
-const commonEngine = new CommonEngine();
+// const commonEngine = new CommonEngine();
 
 /**
  * Example Express Rest API endpoints can be defined here.
@@ -41,16 +42,18 @@ app.get(
 app.get('**', (req, res, next) => {
   const { protocol, originalUrl, baseUrl, headers } = req;
 
-  commonEngine
-    .render({
-      bootstrap,
-      documentFilePath: indexHtml,
-      url: `${protocol}://${headers.host}${originalUrl}`,
-      publicPath: browserDistFolder,
-      providers: [{ provide: APP_BASE_HREF, useValue: baseUrl }],
-    })
-    .then((html) => res.send(html))
-    .catch((err) => next(err));
+  // Remove SSR rendering logic
+  // commonEngine
+  //   .render({
+  //     bootstrap,
+  //     documentFilePath: indexHtml,
+  //     url: `${protocol}://${headers.host}${originalUrl}`,
+  //     publicPath: browserDistFolder,
+  //     providers: [{ provide: APP_BASE_HREF, useValue: baseUrl }],
+  //   })
+  //   .then((html) => res.send(html))
+  //   .catch((err) => next(err));
+  res.sendFile(indexHtml);
 });
 
 /**
