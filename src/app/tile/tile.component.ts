@@ -1,15 +1,22 @@
-import { Component, Input, Output, HostListener, ElementRef , SimpleChanges, EventEmitter} from '@angular/core';
+import { Component, Input, Output, ElementRef, EventEmitter } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'tile',
   imports: [ FormsModule ],
   template: `
- <p [class.error]="error" class="tile" tabindex="0" >{{text}}</p>
-`,
+    <input
+      [class.error]="error"
+      class="tile"
+      type="text"
+      [(ngModel)]="text"
+      (ngModelChange)="onTextChange($event)"
+      tabindex="0"
+    />
+  `,
   styles: [
     `
-    .tile {
+.tile {
   width: 50px;
   height: 50px;
   display: flex;
@@ -25,13 +32,12 @@ import { FormsModule } from '@angular/forms';
 }
 
 .tile:focus {
-  // border-color: blue; /* Blue border when selected */
   border: 3px solid blue;
   margin: 3px;
 }
 
-.error{
-    border-color: red;
+.error {
+  border-color: red;
 }
 
 .tile::-webkit-outer-spin-button,
@@ -53,31 +59,26 @@ export class TileComponent {
   @Input() error: boolean = false;
   text: string = "";
 
-  constructor(private el: ElementRef) {
+  constructor(private el: ElementRef) {}
+
+  ngOnInit() {
+    if (this.number !== 0) {
+      this.text = this.number.toString();
+    }
   }
 
-
-  @HostListener('keydown', ['$event'])
-  handleKeyboardEvent(event: KeyboardEvent) {
-    event.stopPropagation();
-    if (event.key >= '1' && event.key <= '9') {
-      this.text = event.key;
-      this.number = Number(event.key);
-    } else if (event.key === 'Backspace') {
+  onTextChange(value: string) {
+    if (value.length > 1) {
+      value = value.slice(-1); // Keep only the last entered digit
+    }
+    if (value.match(/^[1-9]$/)) {
+      this.number = Number(value);
+      this.text = value;
+    } else {
       this.number = 0;
       this.text = "";
     }
+    this.el.nativeElement.querySelector('.tile').value = this.text; // Explicitly update the input's value
     this.numberChange.emit(this.number);
   }
-
-  ngOnInit() {
-    if(this.number != 0)
-      this.text = this.number.toString();
-  }
-
-  @HostListener('click')
-  handleClick() {
-    this.el.nativeElement.querySelector('.tile').focus();
-  }
-
 }
